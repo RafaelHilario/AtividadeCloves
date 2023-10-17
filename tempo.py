@@ -1,24 +1,21 @@
 import requests
+from bs4 import BeautifulSoup
 
-def obter_previsao_tempo(cidade, api_key):
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={cidade}&appid={api_key}&units=metric"
+def obter_previsao_tempo(cidade):
+    url = f"https://www.weather-forecast.com/locations/{cidade}/forecasts/latest"
     resposta = requests.get(url)
-    dados = resposta.json()
-
+    
     if resposta.status_code == 200:
-        clima = dados["weather"][0]["description"]
-        temperatura = dados["main"]["temp"]
-        umidade = dados["main"]["humidity"]
-        vento = dados["wind"]["speed"]
-        return f"Condição: {clima}\nTemperatura: {temperatura}°C\nUmidade: {umidade}%\nVelocidade do Vento: {vento} m/s"
+        soup = BeautifulSoup(resposta.content, "html.parser")
+        previsao = soup.find("span", class_="phrase").text
+        return previsao.strip()
     else:
-        return "Cidade não encontrada ou erro na obtenção dos dados."
+        return "Não foi possível obter a previsão do tempo para esta cidade."
 
 def main():
     cidade = input("Digite o nome da cidade para consultar a previsão do tempo: ")
-    api_key = "SUA_CHAVE_DE_API_DO_OPENWEATHERMAP"  # Substitua pelo seu próprio OpenWeatherMap API Key
-    previsao = obter_previsao_tempo(cidade, api_key)
-    print(previsao)
+    previsao = obter_previsao_tempo(cidade)
+    print(f"Previsão do Tempo para {cidade}: {previsao}")
 
 if __name__ == "__main__":
     main()
